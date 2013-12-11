@@ -6,6 +6,8 @@ pygtk.require('2.0')
 import gobject
 import gtk
 
+import powercells as pc
+
 class AppWindow(gtk.Window):
   def about_dialog_clicked(self, widget):
     dialog = gtk.AboutDialog()
@@ -38,6 +40,12 @@ class AppWindow(gtk.Window):
 
     frame = gtk.Frame("Power")
     hbox.pack_start(frame, padding=5)
+
+    box = gtk.VBox()
+    frame.add(box)
+
+    power_cells = pc.PowerCells()
+    box.pack_start(power_cells)
 
     frame = gtk.Frame("Wind")
     hbox.pack_start(frame, padding=5)
