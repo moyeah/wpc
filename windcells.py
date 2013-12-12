@@ -12,14 +12,30 @@ import wpcutils as wpc
 # columns
 (
   COLUMN_SPEED,
-  COLUMN_POWER,
+  COLUMN_WIND,
   COLUMN_EDITABLE
 ) = range(3)
 
 # data
-powers = [["0.0", "0.0", True]]
+winds = [["0.0", "0.0", True]]
 
-class PowerCells(gtk.ScrolledWindow):
+class WindButtonBox(gtk.HButtonBox):
+  def __init__(self, box, wc):
+    gtk.HButtonBox.__init__(self)
+    self.set_border_width(5)
+    self.set_layout(gtk.BUTTONBOX_END)
+    self.set_spacing(5)
+    box.pack_start(self, False, False)
+
+    button = gtk.Button(stock='gtk-add')
+    button.connect('clicked', lambda *w: wc.add_item())
+    self.add(button)
+
+    button = gtk.Button(stock='gtk-remove')
+    button.connect('clicked', lambda *w: wc.remove_item())
+    self.add(button)
+
+class WindCells(gtk.ScrolledWindow):
   def __init__(self, parent=None, border=5):
     gtk.ScrolledWindow.__init__(self)
 
@@ -53,12 +69,12 @@ class PowerCells(gtk.ScrolledWindow):
   def __add_itens(self, model):
 
     # add itens
-    for item in powers:
+    for item in winds:
       iter = model.append()
 
       model.set(iter,
                 COLUMN_SPEED, item[COLUMN_SPEED],
-                COLUMN_POWER, item[COLUMN_POWER],
+                COLUMN_WIND, item[COLUMN_WIND],
                 COLUMN_EDITABLE, item[COLUMN_EDITABLE])
 
   def __add_columns(self, treeview):
@@ -75,15 +91,15 @@ class PowerCells(gtk.ScrolledWindow):
     column.set_sort_column_id(COLUMN_SPEED)
     treeview.append_column(column)
 
-    # power column
+    # wind column
     renderer = gtk.CellRendererText()
-    renderer.set_data("column", COLUMN_POWER)
+    renderer.set_data("column", COLUMN_WIND)
     renderer.connect('edited', self.on_cell_edited, model)
 
-    column = gtk.TreeViewColumn("P(u) [kW]", renderer,
-                                text=COLUMN_POWER,
+    column = gtk.TreeViewColumn("f(u)", renderer,
+                                text=COLUMN_WIND,
                                 editable=COLUMN_EDITABLE)
-    column.set_sort_column_id(COLUMN_POWER)
+    column.set_sort_column_id(COLUMN_WIND)
     treeview.append_column(column)
 
   def on_cell_edited(self, cell, path_string, new_text, model):
@@ -96,7 +112,7 @@ class PowerCells(gtk.ScrolledWindow):
     except (SyntaxError, TypeError, ValueError), error:
       wpc.error_dialog(error)
     except NameError:
-      if column == COLUMN_POWER:
+      if column == COLUMN_WIND:
         u = 1
         try:
           float(eval(new_text))
@@ -109,29 +125,29 @@ class PowerCells(gtk.ScrolledWindow):
       path = model.get_path(iter)[0]
 
       if column == COLUMN_SPEED:
-        powers[path][COLUMN_SPEED] = str(value)
-        powers.sort(key = lambda x: float(x[0]))
+        winds[path][COLUMN_SPEED] = str(value)
+        winds.sort(key = lambda x: float(x[0]))
         model.clear()
         self.__add_itens(model)
 
-      elif column == COLUMN_POWER:
-        powers[path][COLUMN_POWER] = str(value)
-        model.set(iter, column, powers[path][COLUMN_POWER])
+      elif column == COLUMN_WIND:
+        winds[path][COLUMN_WIND] = str(value)
+        model.set(iter, column, winds[path][COLUMN_WIND])
 
-  def get_powers(self):
-    return powers
+  def get_winds(self):
+    return winds
 
   def get_model(self):
     return self.model
 
   def add_item(self):
     new_item = ["0.0", "0.0", True]
-    powers.insert(0, new_item)
+    winds.insert(0, new_item)
 
     iter = self.model.insert_before(self.model.get_iter_root())
     self.model.set(iter,
                    COLUMN_SPEED, new_item[COLUMN_SPEED],
-                   COLUMN_POWER, new_item[COLUMN_POWER],
+                   COLUMN_WIND, new_item[COLUMN_WIND],
                    COLUMN_EDITABLE, new_item[COLUMN_EDITABLE])
 
   def remove_item(self):
@@ -142,4 +158,4 @@ class PowerCells(gtk.ScrolledWindow):
       path = model.get_path(iter)[0]
       model.remove(iter)
 
-      del powers[path]
+      del winds[path]
