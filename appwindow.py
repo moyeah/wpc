@@ -5,7 +5,9 @@ import pygtk
 pygtk.require('2.0')
 import gobject
 import gtk
+import itertools
 
+from scipy.stats import exponweib
 from math import *
 
 import powercells as pc
@@ -295,11 +297,11 @@ class AppWindow(gtk.Window):
 
     self.show_all()
 
-  def on_execute_clicked(self, widget, cbox):
+  def on_execute_clicked(self, widget, cbox, step=.5):
     pg.PowerGraph(self.power_cells.get_powers())
     self.on_plot_wind_clicked(widget, cbox)
 
-    power = self.power_cells.get_powers()
+    powers = self.power_cells.get_powers()
     x = []
     y = []
 
@@ -316,8 +318,16 @@ class AppWindow(gtk.Window):
     y.append(float(eval(powers[-1][1])))
 
     energy = 0.0
+    shape = float(self.wd.get_shape())
+    scale = float(self.wd.get_scale())
     index = cbox.get_active()
     if index == 0:
+      for i in range(len(x)):
+        u = float(x[i])
+        power = float(y[i])
+        if(power > 0):
+          energy += power * (shape/scale) * (u / scale)**(shape - 1) * exp(-(u / scale)**shape) * 8.760
+      print energy
       return
 
     if index == 1:
