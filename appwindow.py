@@ -327,7 +327,6 @@ class AppWindow(gtk.Window):
         power = float(y[i])
         if(power > 0):
           energy += power * (shape/scale) * (u / scale)**(shape - 1) * exp(-(u / scale)**shape) * 8.760
-      print energy
       return
 
     if index == 1:
