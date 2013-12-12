@@ -8,7 +8,6 @@ import gtk
 
 import powercells as pc
 import powergraph as pg
-import powercalc as pcal
 
 authors = ["Daniel Sousa <1000146@isep.ipp.pt>",
            "Eugénio Xavier <1130200@isep.ipp.pt>",
@@ -26,7 +25,7 @@ class AppWindow(gtk.Window):
     dialog.destroy()
 
   def on_open_clicked(self, button, power_cells):
-    pcal.calc(power_cells.get_powers())
+    pass
 
   def __init__(self, parent=None, title="Wind Power Calculator"):
     gtk.Window.__init__(self)
@@ -95,7 +94,7 @@ class AppWindow(gtk.Window):
     box.pack_start(bbox, False, False)
 
     button = gtk.Button(label='Plot _Power Graph')
-    button.connect('clicked', lambda *w: pg.PowerGraph(range(10), range(10)))
+    button.connect('clicked', lambda *w: pg.PowerGraph(power_cells.get_powers()))
     bbox.add(button)
 
     frame = gtk.Frame("Wind")

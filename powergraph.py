@@ -11,7 +11,14 @@ from matplotlib.backends.backend_gtkagg import NavigationToolbar2GTKAgg as Navig
 from matplotlib.backend_bases import key_press_handler
 
 class PowerGraph(gtk.Window):
-  def __init__(self, x, y, title="Power Graph", parent=None):
+  def __init__(self, powers, title="Power Graph", parent=None):
+    x = []
+    y = []
+
+    for power in powers:
+      x.append(float(power[0]))
+      y.append(float(power[1]))
+
     gtk.Window.__init__(self)
  
     try:

@@ -5,7 +5,7 @@ pygtk.require('2.0')
 import gobject
 import gtk
 
-from bisect import insort
+from math import *
 
 # columns
 (
@@ -16,6 +16,17 @@ from bisect import insort
 
 # data
 powers = [["0.0", "0.0", True]]
+
+def error_dialog(error):
+  error = str(error)
+  error = error[:1].upper() + error[1:]
+  dialog = gtk.MessageDialog(None,
+                             gtk.DIALOG_DESTROY_WITH_PARENT,
+                             gtk.MESSAGE_ERROR, gtk.BUTTONS_OK,
+                             error)
+  dialog.set_title("Error...")
+  dialog.run()
+  dialog.destroy()
 
 class PowerCells(gtk.ScrolledWindow):
   def __init__(self, parent=None, border=5):
@@ -44,6 +55,12 @@ class PowerCells(gtk.ScrolledWindow):
                           gobject.TYPE_STRING,
                           gobject.TYPE_BOOLEAN)
 
+    self.__add_itens(model)
+
+    return model
+
+  def __add_itens(self, model):
+
     # add itens
     for item in powers:
       iter = model.append()
@@ -52,8 +69,6 @@ class PowerCells(gtk.ScrolledWindow):
                 COLUMN_SPEED, item[COLUMN_SPEED],
                 COLUMN_POWER, item[COLUMN_POWER],
                 COLUMN_EDITABLE, item[COLUMN_EDITABLE])
-
-    return model
 
   def __add_columns(self, treeview):
     model = treeview.get_model()
@@ -81,17 +96,36 @@ class PowerCells(gtk.ScrolledWindow):
     treeview.append_column(column)
 
   def on_cell_edited(self, cell, path_string, new_text, model):
-    iter = model.get_iter_from_string(path_string)
-    path = model.get_path(iter)[0]
     column = cell.get_data("column")
 
-    if column == COLUMN_SPEED:
-      powers[path][COLUMN_SPEED] = new_text
-      model.set(iter, column, powers[path][COLUMN_SPEED])
+    try:
+      value = float(eval(new_text))
+      if(value < 0):
+        value = 0.0
+    except (SyntaxError, TypeError, ValueError), error:
+      error_dialog(error)
+    except NameError:
+      if column == COLUMN_POWER:
+        u = 1
+        try:
+          float(eval(new_text))
+          value = new_text
+        except (SyntaxError, TypeError, ValueError, NameError), error:
+          error_dialog(error)
 
-    elif column == COLUMN_POWER:
-      powers[path][COLUMN_POWER] = new_text
-      model.set(iter, column, powers[path][COLUMN_POWER])
+    if 'value' in locals():
+      iter = model.get_iter_from_string(path_string)
+      path = model.get_path(iter)[0]
+
+      if column == COLUMN_SPEED:
+        powers[path][COLUMN_SPEED] = str(value)
+        powers.sort(key = lambda x: float(x[0]))
+        model.clear()
+        self.__add_itens(model)
+
+      elif column == COLUMN_POWER:
+        powers[path][COLUMN_POWER] = str(value)
+        model.set(iter, column, powers[path][COLUMN_POWER])
 
   def get_powers(self):
     return powers
@@ -101,10 +135,9 @@ class PowerCells(gtk.ScrolledWindow):
 
   def add_item(self):
     new_item = ["0.0", "0.0", True]
-    insort(powers, new_item)
-    print(powers)
+    powers.insert(0, new_item)
 
-    iter = self.model.append()
+    iter = self.model.insert_before(self.model.get_iter_root())
     self.model.set(iter,
                    COLUMN_SPEED, new_item[COLUMN_SPEED],
                    COLUMN_POWER, new_item[COLUMN_POWER],
