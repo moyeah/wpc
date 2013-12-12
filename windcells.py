@@ -96,7 +96,7 @@ class WindCells(gtk.ScrolledWindow):
     renderer.set_data("column", COLUMN_WIND)
     renderer.connect('edited', self.on_cell_edited, model)
 
-    column = gtk.TreeViewColumn("f(u)", renderer,
+    column = gtk.TreeViewColumn("f(u) [%]", renderer,
                                 text=COLUMN_WIND,
                                 editable=COLUMN_EDITABLE)
     column.set_sort_column_id(COLUMN_WIND)

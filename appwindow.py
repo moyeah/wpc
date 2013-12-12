@@ -12,6 +12,7 @@ import powercells as pc
 import powergraph as pg
 import wpcutils as wpc
 import windcells as wc
+import windgraph as wg
 
 authors = ["Daniel Sousa <1000146@isep.ipp.pt>",
            "Eugénio Xavier <1130200@isep.ipp.pt>",
@@ -138,6 +139,22 @@ class AppWindow(gtk.Window):
       self.box.show_all()
       return
 
+  def on_plot_wind_clicked(self, widget, cbox):
+    index = cbox.get_active()
+
+    if index == 0:
+      wg.WindGraph(weibull=[self.wd.get_shape(),
+                            self.wd.get_scale(),
+                            float(self.power_cells.get_powers()[-1][0])])
+      return
+
+    if index == 1:
+      return
+
+    if index == 2:
+      wg.WindGraph(winds=self.wc.get_winds())
+
+
   def __init__(self, parent=None, title="Wind Power Calculator"):
     gtk.Window.__init__(self)
 
@@ -177,8 +194,8 @@ class AppWindow(gtk.Window):
     button.connect('clicked', lambda *w: gtk.main_quit())
     bbox.add(button)
 
-    power_cells = pc.PowerCells()
-    box.pack_start(power_cells)
+    self.power_cells = pc.PowerCells()
+    box.pack_start(self.power_cells)
 
     bbox = gtk.HButtonBox()
     bbox.set_border_width(5)
@@ -187,11 +204,11 @@ class AppWindow(gtk.Window):
     box.pack_start(bbox, False, False)
 
     button = gtk.Button(stock='gtk-add')
-    button.connect('clicked', lambda *w: power_cells.add_item())
+    button.connect('clicked', lambda *w: self.power_cells.add_item())
     bbox.add(button)
 
     button = gtk.Button(stock='gtk-remove')
-    button.connect('clicked', lambda *w: power_cells.remove_item())
+    button.connect('clicked', lambda *w: self.power_cells.remove_item())
     bbox.add(button)
 
     bbox = gtk.HButtonBox()
@@ -201,7 +218,7 @@ class AppWindow(gtk.Window):
     box.pack_start(bbox, False, False)
 
     button = gtk.Button(label='Plot _Power Graph')
-    button.connect('clicked', lambda *w: pg.PowerGraph(power_cells.get_powers()))
+    button.connect('clicked', lambda *w: pg.PowerGraph(self.power_cells.get_powers()))
     bbox.add(button)
 
     frame = gtk.Frame("Wind")
@@ -255,7 +272,7 @@ class AppWindow(gtk.Window):
     box.pack_end(bbox, False, False)
 
     button = gtk.Button(label='Plot _Wind Graph')
-    #button.connect('clicked', lambda *w: pg.WindGraph(self.w.get_powers()))
+    button.connect('clicked', self.on_plot_wind_clicked, cbox)
     bbox.add(button)
 
     bbox = gtk.HButtonBox()
@@ -269,7 +286,7 @@ class AppWindow(gtk.Window):
     bbox.add(button)
 
     button = gtk.Button(stock='gtk-execute')
-    button.connect('clicked', lambda *w: gtk.main_quit())
+    button.connect('clicked', self.on_execute_clicked, cbox)
     bbox.add(button)
 
     button = gtk.Button(stock='gtk-about')
@@ -277,6 +294,37 @@ class AppWindow(gtk.Window):
     bbox.add(button)
 
     self.show_all()
+
+  def on_execute_clicked(self, widget, cbox):
+    pg.PowerGraph(self.power_cells.get_powers())
+    self.on_plot_wind_clicked(widget, cbox)
+
+    power = self.power_cells.get_powers()
+    x = []
+    y = []
+
+    for power, next_power in itertools.izip(powers, powers[1:]):
+      u = float(power[0])
+      u1 = float(next_power[0])
+
+      while u < u1:
+        x.append(u)
+        y.append(float(eval(power[1])))
+        u += step*(u1-u)
+
+    x.append(float(powers[-1][0]))
+    y.append(float(eval(powers[-1][1])))
+
+    energy = 0.0
+    index = cbox.get_active()
+    if index == 0:
+      return
+
+    if index == 1:
+      return
+
+    if index == 2:
+      return
 
   def main(self):
     gtk.main()

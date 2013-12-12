@@ -5,6 +5,7 @@ pygtk.require('2.0')
 import gobject
 import gtk
 import itertools
+
 from numpy import linspace
 from math import *
 
@@ -41,12 +42,18 @@ class PowerGraph(gtk.Window):
       self.set_parent(parent)
     self.set_title(title)
     self.set_destroy_with_parent(True)
+    self.set_default_size(600, 400)
 
     vbox = gtk.VBox()
     self.add(vbox)
 
     figure = Figure(figsize=(5,4), dpi=100)
-    figure.add_subplot(111).plot(x, y)
+    subplot = figure.add_subplot(111)
+    subplot.plot(x, y)
+    subplot.set_title("Power Graph")
+    subplot.set_xlabel("Speed (u) [m/s]")
+    subplot.set_ylabel("Power [kW]")
+    subplot.grid(True)
 
     self.canvas = FigureCanvas(figure)
     self.canvas.mpl_connect('key_press_event', self.on_key_event)
