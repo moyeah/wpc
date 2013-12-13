@@ -7,7 +7,6 @@ import gobject
 import gtk
 import itertools
 
-from scipy.stats import exponweib
 from math import *
 
 import powercells as pc
@@ -92,6 +91,18 @@ class WeibullDist:
     return self.shape
 
 class AppWindow(gtk.Window):
+  def results_dialog(self, message):
+    dialog = gtk.MessageDialog(self,
+                               gtk.DIALOG_DESTROY_WITH_PARENT,
+                               gtk.MESSAGE_INFO,
+                               gtk.BUTTONS_CLOSE,
+                               str(message))
+    dialog.set_title("Wind Power Results")
+    dialog.set_default_size(200, 100)
+    dialog.show_all()
+    dialog.run()
+    dialog.destroy()
+
   def about_dialog_clicked(self, widget):
     dialog = gtk.AboutDialog()
     dialog.set_program_name("Wind Power Calculator")
@@ -326,7 +337,8 @@ class AppWindow(gtk.Window):
         u = float(x[i])
         power = float(y[i])
         if(power > 0):
-          energy += power * (shape/scale) * (u / scale)**(shape - 1) * exp(-(u / scale)**shape) * 8.760
+          energy += power * wpc.weibull(u, shape, scale) * 8.760
+      self.results_dialog(str(energy))
       return
 
     if index == 1:

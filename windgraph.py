@@ -41,7 +41,7 @@ class WindGraph(gtk.Window):
     numargs = exponweib.numargs
     [a, c] = [weibull[0]] * numargs
     rv = exponweib(a, c, scale=weibull[1])
-    x = arange(start=0, stop=weibull[2], step=step)
+    x = arange(start=0, stop=weibull[2], step=step/2)
     subplot.plot(x, rv.pdf(x)*100)
 
   def __init__(self, winds=None, weibull=None, step=0.5, title="Wind Graph", parent=None):
